@@ -1,6 +1,7 @@
 const startBrowser = require('./puppeteer');
 const fs = require('fs');
 const { urls } = require('./queries');
+const data = require('../data.json');
 
 function updateJson(video) {
 	// Get JSON
@@ -126,3 +127,5 @@ async function scrapper(list_index) {
 
 // Run
 // scrapper(0);
+
+console.log(data.videos.length);
