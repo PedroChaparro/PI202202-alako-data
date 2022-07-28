@@ -83,7 +83,7 @@ async function getVideoData(browser, videoUrl) {
 	const video = {
 		url: videoUrl,
 		title,
-		description: description.trim().replace(/\s\s+/g, ' ').replace('/\n/', ''),
+		description: description.replace(/\n/g, '').replace(/\s\s+/g, ' ').trim(),
 		tags,
 		thumbnail,
 	};
@@ -101,6 +101,8 @@ async function scrapper(list_index) {
 	let counter = 1;
 
 	// Start the browser and navigate to the page
+	const startDate = new Date();
+
 	const browser = await startBrowser();
 
 	const page = await browser.newPage();
@@ -119,6 +121,13 @@ async function scrapper(list_index) {
 
 	await browser.close();
 
+	const endDate = new Date();
+	const timeElapsed = Math.abs(endDate - startDate) / 60000;
+
+	console.log(
+		`⏳ Data from ${links.length} videos about ${topic_url_pair.topic} was scrapped in ${timeElapsed} minutes \n`
+	);
+
 	// Next topic
 	if (list_index < urls.length - 1) {
 		scrapper(++list_index);
@@ -127,5 +136,3 @@ async function scrapper(list_index) {
 
 // Run
 // scrapper(0);
-
-console.log(data.videos.length);
