@@ -19,7 +19,7 @@ npm i
 4. Run start command or manually execute the scraper.js file
 
 ```shell script
-npm run start
+npm start
 ```
 
 or
@@ -28,8 +28,26 @@ or
 node scraper.js
 ```
 
-5. Finally, you can find the results on `data.json` file.
+5. Finally, you can find the results on `data.json` file **(Average time needed is 7.22 minutes to get data from 146 videos), but this can vary depending on your machine specs and your internet connection**
 
 ## Dataset
 
-The provided dataset constains data extracted from `2178 youtube videos` about `15 different topics / categories`. Each JSON object contain the video title, video description, video tags, video url, and the url of the video thumbnail.
+The provided dataset contains data extracted from `215 youtube videos` about `15 different topics / categories`. Each JSON object contain the video title, video description, video tags, video url, and the url of the video thumbnail. Data is distributed as following:
+
+| Topic                     | N. of data extracted |
+| ------------------------- | -------------------- |
+| Development methodologies | 145                  |
+| Song mix playlist         | 147                  |
+| Data structures           | 142                  |
+| Ancient history           | 147                  |
+| Football highlights       | 148                  |
+| Digital art               | 146                  |
+| Movie trailer             | 149                  |
+| Tedx talks                | 143                  |
+| Web development           | 145                  |
+| Gameplay walkthrough      | 145                  |
+| What would happen         | 141                  |
+| Data mining               | 148                  |
+| Machine learning          | 146                  |
+| Traveling vlog            | 147                  |
+| Colombian touristic       | 146                  |
