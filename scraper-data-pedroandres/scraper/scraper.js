@@ -83,7 +83,7 @@ async function getVideoData(browser, videoUrl) {
 	const video = {
 		url: videoUrl,
 		title,
-		description: description.replace(/\n/g, '').replace(/\s\s+/g, ' ').trim(),
+		description: description.replace(/\n/g, ' ').replace(/\s\s+/g, ' ').trim(),
 		tags,
 		thumbnail,
 	};
@@ -135,4 +135,4 @@ async function scrapper(list_index) {
 }
 
 // Run
-// scrapper(0);
+scrapper(0);
