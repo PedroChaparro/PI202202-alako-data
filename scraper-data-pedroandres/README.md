@@ -32,7 +32,7 @@ node scraper.js
 
 ## Dataset
 
-The provided dataset contains data extracted from `215 youtube videos` about `15 different topics / categories`. Each JSON object contain the video title, video description, video tags, video url, and the url of the video thumbnail. Data is distributed as following:
+The provided dataset contains data extracted from `2185 youtube videos` about `15 different topics / categories`. Each JSON object contain the video title, video description, video tags, video url, and the url of the video thumbnail. Data is distributed as following:
 
 | Topic                     | N. of data extracted |
 | ------------------------- | -------------------- |
