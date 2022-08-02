@@ -7,8 +7,6 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
      
-
-
 def get_links(url, driver):
      driver.get(url)
 
@@ -21,8 +19,6 @@ def get_links(url, driver):
      links = [l.get_attribute("href") for l in link_videos if l.get_attribute("href") != None]
 
      return links
-
-
 
 topics = ['technology',
           'productivity',
