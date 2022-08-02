@@ -2,6 +2,10 @@
 require 'webdrivers'
 require 'json'
 
+# Start time
+startTime = Time.now
+print "\rStart ", startTime, "\r"
+
 # chromium
 options = Selenium::WebDriver::Options.chrome
 options.add_argument("--headless")
@@ -13,7 +17,6 @@ topicsFilePath = './topics.txt'
 root_url_list = Array.new
 
 # read topics from file
-
 File.readlines(topicsFilePath).each do |line|
   
   # line is not empty
@@ -42,7 +45,7 @@ for k in 0..(root_url_list.length-1) do
   # vars
   url_list = Array.new
   screen_height = 9999
-  regDesired = 3
+  regDesired = 200
   regObtained = 0
   regPrevious = regObtained
   sameRegCount = 0
@@ -158,6 +161,11 @@ end
 File.open(filePath,"a") do |line|
   line.puts ']}'
 end
+
+# start time
+print "\rStart ", startTime, "\r"
+# finish time
+print "\rFinish ", Time.now, "\r"
 
 # exit
 
