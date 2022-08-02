@@ -1,0 +1,16 @@
+{
+	"name": "scraper-data-pedroandres",
+	"version": "1.0.0",
+	"description": "Get video data from youtube using puppeteer",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start": "node scraper.js"
+	},
+	"keywords": [],
+	"author": "Pedro Andres Chaparro Quintero",
+	"license": "ISC",
+	"dependencies": {
+		"puppeteer": "^15.5.0"
+	}
+}
