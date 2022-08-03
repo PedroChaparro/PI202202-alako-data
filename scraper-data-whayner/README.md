@@ -1,4 +1,11 @@
-### Dependencies
+## Velocidad
+
+Probado con 15 temas, 140 registros cada uno:
+
+- 2100 registros en 29 minutos
+- ~ 72 registros por minuto
+
+## Dependencies
 
 1. Install Ruby:
 
@@ -16,7 +23,7 @@
 
 
 
-### Setup
+## Setup
 
 1. Install Ruby packages (gems):
 
@@ -27,12 +34,12 @@
 
 2. Define search topics in `topics.txt`.
 
-### Run
+## Run
 ```bash
-bundle exec ruby craw.rb
+bundle exec ruby crawl.rb
 ```
 
-### Output files
+## Output files
 ```bash
 data.json
 ```
