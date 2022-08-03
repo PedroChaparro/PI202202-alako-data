@@ -1,2 +1,10 @@
-software development
-Videogames
+gimp editor
+godot development
+blender 3d
+lmms music
+classic piano
+dreamcore music
+guitar cover
+linux 
+openbsd
+birds animal
