@@ -1,25 +1,30 @@
 
 require 'webdrivers'
 require 'json'
+require 'open-uri'
+require 'net/http'
 
-# Start time
+regDesired = 20
+screen_height = 9999
 startTime = Time.now
-print "\rStart ", startTime, "\r"
+print "Start ", startTime, "\n"
 
 # chromium
 options = Selenium::WebDriver::Options.chrome
-options.add_argument("--headless")
+# options.add_argument("--headless")
+options.add_argument("--incognito")
 driver = Selenium::WebDriver.for :chrome, options: options
 wait = Selenium::WebDriver::Wait.new(:timeout => 10)
 
+# file
 filePath = './data.json'
 topicsFilePath = './topics.txt'
 root_url_list = Array.new
 
-# read topics from file
+# read topics 
 File.readlines(topicsFilePath).each do |line|
   
-  # line is not empty
+  # line not empty
   if (!/\A[[:space:]]*\z/.match?(line))
     root_url_list.append("https://www.youtube.com/results?search_query=" + line.gsub(' ', '+'))
   end
@@ -40,19 +45,16 @@ end
 for k in 0..(root_url_list.length-1) do
 
   root_url = root_url_list[k]
-  print 'Scaning: ', root_url
+  print 'Scaning Root: ', root_url
 
   # vars
-  url_list = Array.new
-  screen_height = 9999
-  regDesired = 200
   regObtained = 0
   regPrevious = regObtained
   sameRegCount = 0
 
   # TODO ADD PRESENCE WAIT
+  # driver.manage.timeouts.implicit_wait = 1000
   driver.get(root_url)
-  driver.manage.timeouts.implicit_wait = 1000
 
   # get only the desired amount
 
@@ -60,7 +62,7 @@ for k in 0..(root_url_list.length-1) do
 
     # get video entries
 
-    videoE_list = driver.find_elements(css: 'ytd-video-renderer a#video-title')
+    videoE_list = driver.find_elements(css: 'ytd-video-renderer')
     regPrevious = regObtained
     regObtained = videoE_list.length
 
@@ -83,68 +85,41 @@ for k in 0..(root_url_list.length-1) do
   regObtained = [regObtained, regDesired].min
 
   # add video url to list
-  videoE_list.each do |i|
-
-    # respect item limit
-    if url_list.length < regObtained
-      url_list.append(i.attribute('href'))
-    else
-      break
-    end
-
-  end
-
-  # go through every video
-  
   for i in 0..(regObtained-1) do
 
-    iurl = url_list[i]
-    print i, ' ', iurl
+    videoE = videoE_list[i]
+    titleEl = videoE.find_element(css: 'a#video-title')
 
-    # get
-    driver.get(iurl)
+    # get attributes
+    title = titleEl.attribute('title')
+    url = titleEl.attribute('href')
 
-    # wait till title element is accesible
-    
-    titleE = wait.until {driver.find_element(css: '#info h1 yt-formatted-string')}
-    tagsE = driver.find_element({name: 'keywords'})
-    thumbnailE = driver.find_elements(css: 'body > div#watch7-content > link')
+    # description, tags and thumbnail
+    html = Net::HTTP.get_response(URI.parse(url)).body
+    description = html.scan(/"shortDescription":"(?<!\\)[\s\S]+?"/)[0][20..-2]
+    tags = html.scan(/\<meta name="keywords" content="(?<!\\)[\s\S]+?"/)[0][31..-2]
+    thumbnail = html.scan(/thumbnailUrl" href="(?<!\\)[\s\S]+?"/)[0][20..-2]
 
-    # extract values
-    
-    tags = tagsE.attribute('content')
-    title = titleE.attribute('innerText')
-    thumbnail = ''
+    puts (videoE.find_element(css: '#thumbnail img#img'))
+    puts thumbnail
 
-    # extract thumbnail
-    
-    thumbnailE.each do |thumb|
-      if thumb.attribute('itemprop') == 'thumbnailUrl'
-        thumbnail = thumb.attribute('href')
-      end
-    end
-
-    # print debug info
-    # print "\nurl: ", iurl
-    # print "\ntitle: ", title
-    # print "\ntags: ", tags
-    # print "\nthumbnail: ", thumbnail
-    # print "\n"
-
+    # save
     item = {
-      'url' => iurl,
+      'url' => url,
       'title' => title,
+      'description' => description,
       'tags' => tags,
       'thumbnail' => thumbnail
-    }
+    } 
+
+    # puts item
+    print url
 
     # write item to file
-    
-    File.open(filePath,"a") do |line|
+    File.open(filePath, "a") do |line|
       toPut = JSON[item]
 
       # last item
-      
       if ((i != regObtained -1) || (k != (root_url_list.length) -1))
         toPut += ','
       end
@@ -152,22 +127,23 @@ for k in 0..(root_url_list.length-1) do
       line.puts toPut # write
       puts "\033[0;32m ✔\033[0m" # print with colors just because
     end
-
+      
   end
+
 end
 
 # add json closing
-
 File.open(filePath,"a") do |line|
   line.puts ']}'
 end
 
-# start time
-print "\rStart ", startTime, "\r"
-# finish time
-print "\rFinish ", Time.now, "\r"
+# time stats
+endTime = Time.now
+print "\nStart ", startTime, "\n"
+print "Finish ", endTime, "\n"
+print "Total ", (endTime - startTime), "\n"
+print " sec or ", (endTime - startTime)/60, " min\n"
 
 # exit
-
 driver.quit
 
