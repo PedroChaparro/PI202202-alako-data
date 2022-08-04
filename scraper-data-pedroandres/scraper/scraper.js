@@ -1,5 +1,7 @@
 const startBrowser = require('./puppeteer');
 const fs = require('fs');
+const axios = require('axios').default;
+
 const { urls } = require('./queries');
 const data = require('../data.json');
 
@@ -43,56 +45,31 @@ async function getVideosUrl(max, page) {
 async function getVideoData(browser, videoUrl) {
 	console.log('🟩 Parsing video --> ', videoUrl);
 
-	// Setup
-	const page = await browser.newPage();
-	await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
-	await page.goto(videoUrl);
-
-	// Wait for the selectors
-	await page.waitForSelector('h1 > yt-formatted-string');
-	await page.waitForSelector('meta[name="keywords"]');
-	await page.waitForSelector(
-		'ytd-expander > #content > #description > yt-formatted-string'
-	);
+	// Make the axios http request
+	const html = await await (await axios.get(videoUrl)).data;
 
 	// Get data
-	const titleContainer = await page.$('h1 > yt-formatted-string');
-	const title = await titleContainer.evaluate(
-		(element) => element.textContent,
-		titleContainer
-	);
+	let description = html.match(/"shortDescription":"(.*?)"/)[0]; // Match regexp
+	description = description.slice(description.indexOf(':') + 2, description.length - 1);
 
-	const tagsContainer = await page.$('meta[name="keywords"]');
-	const tags = await tagsContainer.evaluate(
-		(element) => element.content,
-		tagsContainer
-	);
+	const title = html.match(/<meta name="title"[^>]+content="(.*?)"/)[1];
 
-	const descriptionContainer = await page.$(
-		'ytd-expander > #content > #description > yt-formatted-string'
-	);
-	const description = await descriptionContainer.evaluate(
-		(element) => element.textContent,
-		descriptionContainer
-	);
+	const keywords = html.match(/<meta name="keywords"[^>]+content="(.*?)"/)[1];
 
-	const thumbnail = `https://img.youtube.com/vi/${
-		videoUrl.split('=')[1]
-	}/maxresdefault.jpg`;
+	const thumbnail = html.match(/<link rel="image_src"[^>]+href="(.*?)"/)[1];
 
+	// Build final object
 	const video = {
 		url: videoUrl,
-		title,
-		description: description.replace(/\n/g, ' ').replace(/\s\s+/g, ' ').trim(),
-		tags,
+		title: title.replace(/\\+n/g, ' ').replace(/\s\s+/g, ' ').trim(),
+		description: description.replace(/\\+n/g, ' ').replace(/\s\s+/g, ' ').trim(),
+		tags: keywords,
 		thumbnail,
 	};
 
 	updateJson(video);
 
 	console.log('🟩 End video --> ', videoUrl, '\n');
-
-	await page.close();
 }
 
 async function scrapper(list_index) {
