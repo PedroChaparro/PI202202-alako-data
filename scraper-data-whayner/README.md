@@ -1,9 +1,9 @@
 ## Velocidad
 
-Probado con 15 temas, 140 registros cada uno:
+Tested with 15 topics, 140 videos each:
 
-- 2100 registros en 29 minutos
-- ~ 72 registros por minuto
+- 2100 videos in 29 minutes
+- ~ 72 videos per minute
 
 ## Dependencies
 
@@ -25,21 +25,32 @@ Probado con 15 temas, 140 registros cada uno:
 
 ## Setup
 
-1. Install Ruby packages (gems):
+- Clone 
+- Install Ruby packages (gems):
 
 	```bash
 	bundle config set --local path 'vendor/bundle'
 	bundle install
 	```
 
-2. Define search topics in `topics.txt`.
+- Define search topics in `topics.txt`.
 
 ## Run
+
+This will start the crawling process:
+
 ```bash
 bundle exec ruby crawl.rb
 ```
 
-## Output files
+The output data will be saved in `data.json`.
+
+## Formatting
+You can execute this formating tool to remove some unwanted characters from the data:
+
 ```bash
-data.json
+bundle exec ruby formater.rb data.json
 ```
+
+It'll create a new formated file called `data.json.formated`.
+
