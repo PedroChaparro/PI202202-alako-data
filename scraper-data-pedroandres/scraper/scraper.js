@@ -8,6 +8,7 @@ const data = require('../data.json');
 // Control variables
 let timesAcc = 0;
 let lengthAcc = 0;
+const error_links = [];
 
 function updateJson(video) {
 	// Get JSON
@@ -80,6 +81,7 @@ async function getVideoData(videoUrl) {
 		console.log('🟩 End video --> ', videoUrl, '\n');
 	} catch (error) {
 		console.log('🟥 There was an error with --> ', videoUrl, '\n');
+		error_links.push(videoUrl);
 	}
 }
 
@@ -124,6 +126,10 @@ async function scrapper(list_index) {
 	if (list_index < urls.length - 1) {
 		scrapper(++list_index);
 	} else {
+		// Print errors
+		console.log('💀 The scraper failed on the followings URLS: ');
+		console.log(error_links, '\n');
+
 		// Print final message
 		console.log(
 			`🏁 Averages: ${lengthAcc / urls.length} videos were scrapped in ${
