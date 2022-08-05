@@ -15,7 +15,6 @@ def get_links(url, driver):
      while len(link_videos) < 205:
           driver.execute_script("let scrollingElement = (document.scrollingElement || document.body);scrollingElement.scrollTop = scrollingElement.scrollHeight;")
           link_videos =  driver.find_elements(By.ID, "video-title")
-
      links = [l.get_attribute("href") for l in link_videos if l.get_attribute("href") != None]
 
      return links
@@ -46,22 +45,14 @@ for word in topics:
           
           driver.get(link)
 
-          head = driver.find_elements(By.TAG_NAME, 'head')
-
-          for elem in head:
-               title = elem.find_element(By.XPATH, "//meta[@name='title']").get_attribute("content")
-               description = elem.find_element(By.XPATH, "//meta[@name='description']").get_attribute("content")
-               keywords = elem.find_element(By.XPATH, "//meta[@name='keywords']").get_attribute("content")
-               thumbnail = elem.find_element(By.XPATH, "//link[@rel='image_src']").get_attribute("href")
-
-               keep_videos.append(
-               {
-               'url': link,
-               'title': title,
-               'description': description,
-               'tags': keywords,
-               'thumbnail': thumbnail,
-               })
+          keep_videos.append(
+          {
+          'url': link,
+          'title': driver.find_element(By.XPATH, "//meta[@name='title']").get_attribute("content"),
+          'description': driver.find_element(By.XPATH, "//meta[@name='description']").get_attribute("content"),
+          'tags': driver.find_element(By.XPATH, "//meta[@name='keywords']").get_attribute("content"),
+          'thumbnail': driver.find_element(By.XPATH, "//link[@rel='image_src']").get_attribute("href"),
+          })
      
      fin = time.time()
 
@@ -71,4 +62,4 @@ for word in topics:
 print((fin - inicio)/60)
 print(fin - inicio)
 with open('./scraper-data-silvia/data.json', 'w+') as json_file:
-          json.dump(keep_videos, json_file, indent=4)
+          json.dump(keep_videos, json_file)
