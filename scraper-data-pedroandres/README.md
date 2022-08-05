@@ -28,11 +28,11 @@ or
 node scraper.js
 ```
 
-5. Finally, you can find the results on `data.json` file **(Average time needed is 7.22 minutes to get data from 146 videos), but this can vary depending on your machine specs and your internet connection**
+5. Finally, you can find the results on `data.json` file **(Average time needed is 2.45 minutes to get data from 145 videos), but this can vary depending on your machine specs and your internet connection**
 
 ## Dataset
 
-The provided dataset contains data extracted from `2185 youtube videos` about `15 different topics / categories`. Each JSON object contain the video title, video description, video tags, video url, and the url of the video thumbnail. Data is distributed as following:
+The provided dataset contains data extracted from `2175 youtube videos` about `15 different topics / categories`. Each JSON object contain the video title, video description, video tags, video url, and the url of the video thumbnail. Data is distributed as following (This can variate slightly (Between 1 or 10 more or less videos) due to recent updates):
 
 | Topic                     | N. of data extracted |
 | ------------------------- | -------------------- |
