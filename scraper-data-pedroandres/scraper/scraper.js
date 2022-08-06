@@ -1,7 +1,14 @@
 const startBrowser = require('./puppeteer');
 const fs = require('fs');
+const axios = require('axios').default;
+
 const { urls } = require('./queries');
 const data = require('../data.json');
+
+// Control variables
+let timesAcc = 0;
+let lengthAcc = 0;
+const error_links = [];
 
 function updateJson(video) {
 	// Get JSON
@@ -18,10 +25,10 @@ function updateJson(video) {
 	});
 }
 
-async function getVideosUrl(max, page) {
+async function getVideosUrl(min, page) {
 	let videos_length = 0;
 
-	while (videos_length < max) {
+	while (videos_length < min) {
 		// Scroll to the end of the document (Charge more videos)
 		await page.evaluate((_) => {
 			window.scrollBy(0, window.innerHeight);
@@ -40,59 +47,42 @@ async function getVideosUrl(max, page) {
 	return links;
 }
 
-async function getVideoData(browser, videoUrl) {
+async function getVideoData(videoUrl) {
 	console.log('🟩 Parsing video --> ', videoUrl);
 
-	// Setup
-	const page = await browser.newPage();
-	await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 });
-	await page.goto(videoUrl);
+	// Make the axios http request
+	const html = await await (await axios.get(videoUrl)).data;
 
-	// Wait for the selectors
-	await page.waitForSelector('h1 > yt-formatted-string');
-	await page.waitForSelector('meta[name="keywords"]');
-	await page.waitForSelector(
-		'ytd-expander > #content > #description > yt-formatted-string'
-	);
+	try {
+		// Get data
+		let description = html.match(/"shortDescription":"(.*?)"/)[0]; // Match regexp
+		description = description.slice(
+			description.indexOf(':') + 2,
+			description.length - 1
+		);
 
-	// Get data
-	const titleContainer = await page.$('h1 > yt-formatted-string');
-	const title = await titleContainer.evaluate(
-		(element) => element.textContent,
-		titleContainer
-	);
+		const title = html.match(/<meta name="title"[^>]+content="(.*?)"/)[1];
 
-	const tagsContainer = await page.$('meta[name="keywords"]');
-	const tags = await tagsContainer.evaluate(
-		(element) => element.content,
-		tagsContainer
-	);
+		const keywords = html.match(/<meta name="keywords"[^>]+content="(.*?)"/)[1];
 
-	const descriptionContainer = await page.$(
-		'ytd-expander > #content > #description > yt-formatted-string'
-	);
-	const description = await descriptionContainer.evaluate(
-		(element) => element.textContent,
-		descriptionContainer
-	);
+		const thumbnail = html.match(/<link rel="image_src"[^>]+href="(.*?)"/)[1];
 
-	const thumbnail = `https://img.youtube.com/vi/${
-		videoUrl.split('=')[1]
-	}/maxresdefault.jpg`;
+		// Build final object
+		const video = {
+			url: videoUrl,
+			title: title.replace(/\\+n/g, ' ').replace(/\s\s+/g, ' ').trim(),
+			description: description.replace(/\\+n/g, ' ').replace(/\s\s+/g, ' ').trim(),
+			tags: keywords,
+			thumbnail,
+		};
 
-	const video = {
-		url: videoUrl,
-		title,
-		description: description.replace(/\n/g, ' ').replace(/\s\s+/g, ' ').trim(),
-		tags,
-		thumbnail,
-	};
+		updateJson(video);
 
-	updateJson(video);
-
-	console.log('🟩 End video --> ', videoUrl, '\n');
-
-	await page.close();
+		console.log('🟩 End video --> ', videoUrl, '\n');
+	} catch (error) {
+		console.log('🟥 There was an error with --> ', videoUrl, '\n');
+		error_links.push(videoUrl);
+	}
 }
 
 async function scrapper(list_index) {
@@ -111,11 +101,12 @@ async function scrapper(list_index) {
 
 	// Get links array
 	const links = await getVideosUrl(140, page);
+	await browser.close();
 
 	// Get information for each video
 	for (let i = 0; i < links.length; i++) {
 		console.log(`Topic: ${topic_url_pair.topic} Video number: ${counter}`);
-		await getVideoData(browser, links[i]);
+		await getVideoData(links[i]);
 		counter++;
 	}
 
@@ -124,6 +115,9 @@ async function scrapper(list_index) {
 	const endDate = new Date();
 	const timeElapsed = Math.abs(endDate - startDate) / 60000;
 
+	timesAcc = timesAcc + timeElapsed;
+	lengthAcc = lengthAcc + links.length;
+
 	console.log(
 		`⏳ Data from ${links.length} videos about ${topic_url_pair.topic} was scrapped in ${timeElapsed} minutes \n`
 	);
@@ -131,6 +125,17 @@ async function scrapper(list_index) {
 	// Next topic
 	if (list_index < urls.length - 1) {
 		scrapper(++list_index);
+	} else {
+		// Print errors
+		console.log('💀 The scraper failed on the followings URLS: ');
+		console.log(error_links, '\n');
+
+		// Print final message
+		console.log(
+			`🏁 Averages: ${lengthAcc / urls.length} videos were scrapped in ${
+				timesAcc / urls.length
+			} minutes`
+		);
 	}
 }
 
