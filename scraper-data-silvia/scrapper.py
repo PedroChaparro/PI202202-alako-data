@@ -20,7 +20,6 @@ topics = ['technology',
           'tasting food']
 
 keep_videos = []
-{'videos': keep_videos}
 
 inicio = time.time()
 

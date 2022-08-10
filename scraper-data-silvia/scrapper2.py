@@ -33,7 +33,6 @@ topics = ['technology',
           'tasting food']
 
 keep_videos = []
-{'videos': keep_videos}
 
 inicio = time.time()
 
@@ -65,5 +64,5 @@ for word in topics:
 
 print((fin - inicio)/60)
 print(fin - inicio)
-with open('./scraper-data-silvia/data.json', 'w+') as json_file:
-          json.dump(keep_videos, json_file)
+with open('./scraper-data-silvia/data.json', 'w+', encoding='utf8') as json_file:
+          json.dump({'videos': keep_videos}, json_file, ensure_ascii=False)
