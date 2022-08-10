@@ -1,27 +1,16 @@
 import json
 import time
 
-from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-     
-def get_links(url, driver):
-     driver.get(url)
-
-     link_videos =  driver.find_elements(By.ID, "video-title")
-
-     while len(link_videos) < 205:
-          driver.execute_script("let scrollingElement = (document.scrollingElement || document.body);scrollingElement.scrollTop = scrollingElement.scrollHeight;")
-          link_videos =  driver.find_elements(By.ID, "video-title")
-     links = [l.get_attribute("href") for l in link_videos if l.get_attribute("href") != None]
-
-     return links
+import requests
+from bs4 import BeautifulSoup
 
 topics = ['technology',
           'productivity',
-          'song mix study',
+          'a day in the life of',
           'recipes',
           'cleaning recommendations',
           'news',
@@ -31,35 +20,50 @@ topics = ['technology',
           'tasting food']
 
 keep_videos = []
+{'videos': keep_videos}
 
 inicio = time.time()
 
 for word in topics:
-     options = Options()
-     options.add_argument("--headless")
-     options.add_argument("--incognito")
-     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-     url=f'https://www.youtube.com/results?search_query={word}'
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--incognito")
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    url=f'https://www.youtube.com/results?search_query={word}'
 
-     for link in get_links(url, driver):
-          
-          driver.get(link)
+    driver.get(url)
 
-          keep_videos.append(
-          {
-          'url': link,
-          'title': driver.find_element(By.XPATH, "//meta[@name='title']").get_attribute("content"),
-          'description': driver.find_element(By.XPATH, "//meta[@name='description']").get_attribute("content"),
-          'tags': driver.find_element(By.XPATH, "//meta[@name='keywords']").get_attribute("content"),
-          'thumbnail': driver.find_element(By.XPATH, "//link[@rel='image_src']").get_attribute("href"),
-          })
-     
-     fin = time.time()
+    soup = BeautifulSoup(driver.page_source, features="lxml")
 
-     print((fin - inicio)/60)
-     print(fin - inicio)
+    html = soup.find_all(id="video-title")
+
+    while len(html) < 230:
+          driver.execute_script("let scrollingElement = (document.scrollingElement || document.body);scrollingElement.scrollTop = scrollingElement.scrollHeight;")
+          soup = BeautifulSoup(driver.page_source, features="lxml")
+          html =  soup.find_all("a", id="video-title", class_="yt-simple-endpoint")
+
+    for l in html:
+        if l != None:
+            link = l.get('href')
+            response = requests.get(f'https://www.youtube.com{link}')
+
+            soup = BeautifulSoup(response.text, features="lxml")
+
+            keep_videos.append(
+            {
+            'url': f'https://www.youtube.com{link}',
+            'title': (soup.find("meta", {"name": "title"})['content']).strip().replace("\n", " "),
+            'description': (soup.find("meta", {"name": "description"})['content']).strip().replace("\n", " "),
+            'tags': soup.find("meta", {"name": "keywords"})['content'],
+            'thumbnail': soup.find("link", {"rel": "image_src"})['href']
+            })
+
+    fin = time.time()
+
+    print((fin - inicio)/60)
+    print(fin - inicio)
 
 print((fin - inicio)/60)
 print(fin - inicio)
-with open('./scraper-data-silvia/data.json', 'w+') as json_file:
-          json.dump(keep_videos, json_file)
+with open('./scraper-data-silvia/data.json', 'w+', encoding='utf8') as json_file:
+          json.dump({'videos': keep_videos}, json_file, ensure_ascii=False)
