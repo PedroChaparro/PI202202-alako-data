@@ -7,12 +7,22 @@
     pip install selenium
 ```
 ```
+    pip install bs4
+```
+```
     pip install webdriver_manager
 ```
-5. Finally execute the scrapper:
+```
+    pip install requests
+```
+5. Finally execute the scrapper (you have 2 options):
 
 ```
     python -u "C:\PATH WHERE IS scrapper.py"
 ```
 
-6. Approximate time for each topic: 4 min 
+```
+    python -u "C:\PATH WHERE IS scrapper2.py"
+```
+
+6. Approximate time for each topic: 3 min
