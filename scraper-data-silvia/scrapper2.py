@@ -23,7 +23,7 @@ def get_links(url, driver):
 
 topics = ['technology',
           'productivity',
-          'song mix study',
+          'a day in the life of',
           'recipes',
           'cleaning recommendations',
           'news',
@@ -33,6 +33,7 @@ topics = ['technology',
           'tasting food']
 
 keep_videos = []
+{'videos': keep_videos}
 
 inicio = time.time()
 
@@ -54,8 +55,7 @@ for word in topics:
           'url': link,
           'title': soup.find("meta", {"name": "title"})['content'],
           'description': soup.find("meta", {"name": "description"})['content'],
-          'tags': soup.find("meta", {"name": "keywords"})['content'],
-          #'thumbnail': driver.find_element(By.XPATH, "//link[@rel='image_src']").get_attribute("href"),
+          'tags': soup.find("meta", {"name": "keywords"})['content']
           })
 
      fin = time.time()
