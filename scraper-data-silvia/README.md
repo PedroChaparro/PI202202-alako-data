@@ -1,4 +1,4 @@
-# Steps especially for Windows
+# Steps
 1. Open Anaconda and create an enviroment (or create it according with your preferences)
 2. From that enviroment open vscode or the IDE of your preference and open the folder of this project and locate in the folder: `scraper-data-silvia`
 
