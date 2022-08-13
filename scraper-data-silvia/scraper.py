@@ -10,7 +10,16 @@ import requests
 from bs4 import BeautifulSoup
 import re
 
-topics = ['technology']
+topics = ['technology news',
+          'productivity',
+          'a day in the life of',
+          'recipes',
+          'cleaning recommendations',
+          'news',
+          'sport news',
+          'student vlogs',
+          'study advices',
+          'tasting food']
 
 keep_videos = []
 
@@ -29,7 +38,7 @@ for word in topics:
 
     html = soup.find_all(id="video-title")
     print("----------------------------- Scrolling Youtube for videos -----------------------------")
-    while len(html) < 10:
+    while len(html) < 215:
           driver.execute_script("let scrollingElement = (document.scrollingElement || document.body);scrollingElement.scrollTop = scrollingElement.scrollHeight;")
           soup = BeautifulSoup(driver.page_source, features="lxml")
           html =  soup.find_all("a", id="video-title", class_="yt-simple-endpoint")
@@ -37,7 +46,6 @@ for word in topics:
     for l in html:
         link = l.get('href')
         if link != None:
-            print(link)
             response = requests.get(f'https://www.youtube.com{link}')
 
             soup = BeautifulSoup(response.text, features="lxml")
@@ -60,5 +68,6 @@ for word in topics:
 
 print((fin - inicio)/60, "minutos totales")
 print(fin - inicio, "segundos totales")
-with open(Path('./scraper-data-silvia/data.json'), 'w+', encoding='utf-8') as json_file:
+
+with open(Path(".\scraper-data-silvia\data.json"), 'w+', encoding='utf-8') as json_file:
           json.dump({'videos': keep_videos}, json_file, ensure_ascii=False)
