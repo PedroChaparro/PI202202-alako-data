@@ -69,5 +69,5 @@ for word in topics:
 print((fin - inicio)/60, "minutos totales")
 print(fin - inicio, "segundos totales")
 
-with open(Path(".\scraper-data-silvia\data.json"), 'w+', encoding='utf-8') as json_file:
+with open(Path(".\data.json"), 'w+', encoding='utf-8') as json_file:
           json.dump({'videos': keep_videos}, json_file, ensure_ascii=False)
