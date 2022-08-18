@@ -49,7 +49,7 @@ The output data will be saved in `data.json`.
 You can execute this formating tool to remove some unwanted characters from the data:
 
 ```bash
-bundle exec ruby formater.rb data.json
+bundle exec ruby formatter.rb data.json
 ```
 
 It'll create a new formated file called `data.json.formated`.
