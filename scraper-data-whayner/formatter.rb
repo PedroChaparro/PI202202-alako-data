@@ -5,6 +5,7 @@
 # Receive a file 
 text = File.read(ARGV[0])
 text = text.gsub(/\\ +|\\n|\\\\n *| */,' ')
+text = text.gsub(/\\+ /,' ')
 text = text.gsub(/  +/,' ')
 
 # save as file.formated
