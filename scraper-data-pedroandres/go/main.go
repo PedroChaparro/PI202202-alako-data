@@ -12,12 +12,13 @@ func getLinks(url string, browser *rod.Browser) (links []string) {
   defer page.MustClose()
 
   // Count videos
-  elements := page.MustElements("ytd-video-renderer")
+  elements := page.MustElements("#video-title")
 
   // Scroll until get at leat 140 videos
   for len(elements) < 140 {
     page.Eval("window.scroll({top: 9999999999})")
-    elements = page.MustElements("ytd-video-renderer")
+    elements = page.MustElements("#video-title")
+    fmt.Println(len(elements))
   }
 
   fmt.Println(len(elements))
