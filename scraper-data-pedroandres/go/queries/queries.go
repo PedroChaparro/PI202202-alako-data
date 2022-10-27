@@ -1,11 +1,10 @@
 package queries
 
-type Query struct {
-  Query		string		
-  Url		string		`json:Url`
-}
+import (
+  "github.com/PedroChaparro/PI202202-alako-data/interfaces"
+)
 
-var Queries = []Query{
+var Queries = []interfaces.Query{
   {
     Query: "Colombian touristic places",
     Url: "https://www.youtube.com/results?search_query=Colombian+touristic+places",
