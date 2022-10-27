@@ -128,6 +128,9 @@ func main(){
       go getData(link, &swg)
     }
 
+	// wait for every routine to finish
+	swg.Wait()
+
     fmt.Printf("🏁 %d videos were saved in %s\n", len(videos.Items) - currLength, time.Since(start))
 
   }
