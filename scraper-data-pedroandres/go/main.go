@@ -16,7 +16,7 @@ import (
 )
 
 // Global variable
-var videos = []interfaces.Video{}
+var videos = interfaces.ConcurrentSlice{}
 
 // Return resulting links for user query
 func getLinks(url string, browser *rod.Browser) (links []string) {
@@ -101,7 +101,10 @@ func getData(url string, swg *sizedwaitgroup.SizedWaitGroup) (video interfaces.V
 
   // fmt.Printf("%+v\n", video)
 
-  videos = append(videos, video) // Append to global variable
+  videos.Lock() // Lock, so it's possible to add whitout lossing data
+  defer videos.Unlock()	// Unlock, so other routines can add data
+  videos.Items = append(videos.Items, video)
+
   return video, nil
 }
 
@@ -112,21 +115,21 @@ func main(){
 
   // For each query
   for _, query := range(queries.Queries) {
-    currLength := len(videos)
+    currLength := len(videos.Items)
     start := time.Now()
     fmt.Printf("🏃 Starting with query: %s\n", query.Query)
     qLinks := getLinks(query.Url, browser)
     // For each query link
-    swg := sizedwaitgroup.New(16) // 16 Concurrent routines
+    swg := sizedwaitgroup.New(8) // 16 Concurrent routines
     for _, link := range(qLinks) {
       swg.Add()
       go getData(link, &swg)
     }
-    fmt.Printf("🏁 Query %d videos were saved in %s\n", len(videos) - currLength, time.Since(start))
+    fmt.Printf("🏁 %d videos were saved in %s\n", len(videos.Items) - currLength, time.Since(start))
   }
 
   // Create json file
-  jsonString, _ := json.Marshal(videos)
+  jsonString, _ := json.Marshal(videos.Items)
   ioutil.WriteFile("data.json", jsonString, os.ModePerm)
 
 }
