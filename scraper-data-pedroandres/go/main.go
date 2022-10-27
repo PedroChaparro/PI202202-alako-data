@@ -51,6 +51,7 @@ func getLinks(url string, browser *rod.Browser) (links []string) {
 // Other fucntion
 func getData(url string, swg *sizedwaitgroup.SizedWaitGroup) (video interfaces.Video, err error) {
   defer swg.Done() // Finish current "job"
+  fmt.Printf("Current url: %s\n", url)
  
   // ### ### ###
   // Get plain html
@@ -119,13 +120,16 @@ func main(){
     start := time.Now()
     fmt.Printf("🏃 Starting with query: %s\n", query.Query)
     qLinks := getLinks(query.Url, browser)
+
     // For each query link
-    swg := sizedwaitgroup.New(8) // 16 Concurrent routines
+    swg := sizedwaitgroup.New(8) // 8 Concurrent routines
     for _, link := range(qLinks) {
       swg.Add()
       go getData(link, &swg)
     }
+
     fmt.Printf("🏁 %d videos were saved in %s\n", len(videos.Items) - currLength, time.Since(start))
+
   }
 
   // Create json file
