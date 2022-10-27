@@ -4,12 +4,19 @@ import (
   "fmt"
   "io/ioutil" // Parse requests
   "net/http" // Requests
-  "regexp"
+  "encoding/json" // Write json file
+  "os"
+  "time"
+  "regexp" // Regular expressions
+  "strings"
   "github.com/PedroChaparro/PI202202-alako-data/queries"
   "github.com/PedroChaparro/PI202202-alako-data/interfaces"
   "github.com/go-rod/rod" // Crawler
   "github.com/remeh/sizedwaitgroup" // Concurrency
 )
+
+// Global variable
+var videos = []interfaces.Video{}
 
 // Return resulting links for user query
 func getLinks(url string, browser *rod.Browser) (links []string) {
@@ -44,12 +51,13 @@ func getLinks(url string, browser *rod.Browser) (links []string) {
 // Other fucntion
 func getData(url string, swg *sizedwaitgroup.SizedWaitGroup) (video interfaces.Video, err error) {
   defer swg.Done() // Finish current "job"
-  
+ 
+  // ### ### ###
   // Get plain html
   reply, err := http.Get(url)
   defer reply.Body.Close()
   
-  video = interfaces.Video{}
+  video = interfaces.Video{Url: url}
 
   if err != nil {
     return video, err
@@ -62,17 +70,38 @@ func getData(url string, swg *sizedwaitgroup.SizedWaitGroup) (video interfaces.V
     return video, err
   }
 
+  // ### ### ###
+  // Parse plain html
   titleRegExp := regexp.MustCompile(`<meta name="title"[^>]+content="(.*?)"`)
+  descriptionRegExp := regexp.MustCompile(`"shortDescription":"(.*?)"`)
   tagsRegExp := regexp.MustCompile(`<meta name="keywords"[^>]+content="(.*?)"`)
   thumbnailRegExp := regexp.MustCompile(`<link rel="image_src"[^>]+href="(.*?)"`)
 
-  fmt.Printf("%q\n", titleRegExp.FindString(html))
-  video.Title = titleRegExp.FindString(html)
-  video.Tags = tagsRegExp.FindString(html)
-  video.Thumbnail = thumbnailRegExp.FindString(html)
+  video.Title = strings.Split(titleRegExp.FindString(html), `content="`)[1]
+  video.Title = strings.Replace(video.Title, `"`, "", len(video.Title)) // Remove quotes
+  video.Description = strings.Split(descriptionRegExp.FindString(html), `"shortDescription":"`) [1]
+  video.Description = strings.Replace(video.Description, `"`, "", len(video.Description))
+  video.Tags = strings.Split(tagsRegExp.FindString(html), `content="`)[1]
+  video.Tags = strings.Replace(video.Tags, `"`, "", len(video.Tags))
+  video.Thumbnail = strings.Split(thumbnailRegExp.FindString(html), `href="`)[1]
+  video.Thumbnail = strings.Replace(video.Thumbnail, `"`, "", len(video.Thumbnail))
 
-  fmt.Println(video)
+  // ### ### ##3
+  // Clear data 
+  spacesRegExp := regexp.MustCompile(`\s\s+`)
+  lineBreakRegExp := regexp.MustCompile(`\\+n`)
+  
+  video.Title = spacesRegExp.ReplaceAllString(video.Title, " ")
+  video.Title = lineBreakRegExp.ReplaceAllString(video.Title, "")
+  video.Title = strings.TrimSpace(video.Title)
 
+  video.Description = spacesRegExp.ReplaceAllString(video.Description, " ")
+  video.Description = lineBreakRegExp.ReplaceAllString(video.Description, "")
+  video.Description = strings.TrimSpace(video.Description)
+
+  // fmt.Printf("%+v\n", video)
+
+  videos = append(videos, video) // Append to global variable
   return video, nil
 }
 
@@ -83,12 +112,21 @@ func main(){
 
   // For each query
   for _, query := range(queries.Queries) {
+    currLength := len(videos)
+    start := time.Now()
+    fmt.Printf("🏃 Starting with query: %s\n", query.Query)
     qLinks := getLinks(query.Url, browser)
     // For each query link
-    swg := sizedwaitgroup.New(16)
+    swg := sizedwaitgroup.New(16) // 16 Concurrent routines
     for _, link := range(qLinks) {
       swg.Add()
       go getData(link, &swg)
     }
+    fmt.Printf("🏁 Query %d videos were saved in %s\n", len(videos) - currLength, time.Since(start))
   }
+
+  // Create json file
+  jsonString, _ := json.Marshal(videos)
+  ioutil.WriteFile("data.json", jsonString, os.ModePerm)
+
 }
